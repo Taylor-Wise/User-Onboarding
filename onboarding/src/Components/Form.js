@@ -12,13 +12,15 @@ const initialState = {
     terms: ""
 };
 
+const [users, setUsers] = useState([]);
+
 const [post, setPost] = useState([]);
 
-const [formState, setFromState] = useState(initialState);
+const [formState, setFormState] = useState(initialState);
 
 const [buttonDisabled, setButtonDisabled] = useState(true);
 
-const [errors, setErrors] = useState(initialState)
+const [errors, setErrors] = useState(initialState);
 
 
 
@@ -32,7 +34,7 @@ const formSchema = yup.object().shape({
 const validation = e => {
     yup
     .reach(formSchema, e.target.name)
-    .validate(e.target.value)
+    .validate(e.target.name === "terms" ? e.target.checked: e.target.value)
     .then(valid => {
         setErrors({...errors, [e.target.name]: "" });
     })
@@ -44,24 +46,42 @@ const validation = e => {
     
 
 useEffect(() => {
-    formSchema.isValid(formSchema).then(valid => {
+    formSchema.isValid(formState).then(valid => {
         setButtonDisabled(!valid);
-    });
+    })
 }, [formState]);
 
 const inputChanges = e => {
     e.persist();
 
-    const formData = {
-        ...formState, [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value
-    };
+    const formData = {...formState, [e.target.name]: e.target.type === "checkbox" ? e.target.checked: e.target.value
+    }
+    setFormState(formData);
     validation(e);
-    setFromState(formData);
+};
+
+const formSubmit = e => {
+e.preventDefault();
+
+axios.post("https://reqres.in/api/users", formState)
+.then(response => {
+    setPost(response.data);
+    setUsers(response.data);
+    setFormState(initialState);
+
+    console.log("Post", post);
+    console.log("users", users);
+    
+})
+.catch(err => {
+    console.log("Error!", err);
+})
+
 };
 
     return(
-        <form>
-            <label htmlFor="name">Name</label>
+        <form onSubmit={formSubmit}>
+            <label htmlFor="name">Name
             <input
             id="name" 
             type="text"
@@ -69,8 +89,10 @@ const inputChanges = e => {
             onChange={inputChanges}
             value={formState.name}
             />
+            {errors.name.length > 0 ? (<p>{errors.name}</p>): null}
+            </label>
 
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email
             <input
             id="email"
             type="email"
@@ -78,17 +100,21 @@ const inputChanges = e => {
             onChange={inputChanges}
             value={formState.email}
             />
+            {errors.email.length > 0 ? (<p>{errors.email}</p>) : null}
+            </label>
 
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Password
             <input
             id="password"
-            type="text"
+            type="password"
             name="password"
             onChange={inputChanges}
             value={formState.password}
             />
+            {errors.password.length > 3 ? (<p>{errors.password}</p>): null}
+            </label>
 
-            <label htmlFor="terms">Terms & Conditions </label>
+            <label htmlFor="terms">Terms & Conditions 
             <input
             id="terms"
             type="checkbox"
@@ -96,8 +122,14 @@ const inputChanges = e => {
             checked={formState.terms}
             onChange={inputChanges}
             />
+            {errors.terms.length > 0 ? ( <p>{errors.terms}</p>): null}
+            </label>
+
+            <pre>{JSON.stringify(users, null, 2)}</pre>
 
             <button disabled={buttonDisabled} type="submit">Submit</button>
+
+          
         </form>
     )
 

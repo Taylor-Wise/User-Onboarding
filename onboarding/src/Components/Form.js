@@ -57,7 +57,6 @@ const inputChanges = e => {
     const formData = {...formState, [e.target.name]: e.target.type === "checkbox" ? e.target.checked: e.target.value
     }
     setFormState(formData);
-    validation(e);
 };
 
 const formSubmit = e => {
@@ -65,13 +64,14 @@ e.preventDefault();
 
 axios.post("https://reqres.in/api/users", formState)
 .then(response => {
+   
     setPost(response.data);
     setUsers(response.data);
     setFormState(initialState);
 
     console.log("Post", post);
     console.log("users", users);
-    
+    validation(inputChanges);
 })
 .catch(err => {
     console.log("Error!", err);
@@ -88,6 +88,7 @@ axios.post("https://reqres.in/api/users", formState)
             name="name"
             onChange={inputChanges}
             value={formState.name}
+            data-cy="name"
             />
             {errors.name.length > 0 ? (<p>{errors.name}</p>): null}
             </label>
@@ -99,6 +100,7 @@ axios.post("https://reqres.in/api/users", formState)
             name="email"
             onChange={inputChanges}
             value={formState.email}
+            data-cy="email"
             />
             {errors.email.length > 0 ? (<p>{errors.email}</p>) : null}
             </label>
@@ -110,6 +112,7 @@ axios.post("https://reqres.in/api/users", formState)
             name="password"
             onChange={inputChanges}
             value={formState.password}
+            data-cy="password"
             />
             {errors.password.length > 3 ? (<p>{errors.password}</p>): null}
             </label>
@@ -125,10 +128,10 @@ axios.post("https://reqres.in/api/users", formState)
             {errors.terms.length > 0 ? ( <p>{errors.terms}</p>): null}
             </label>
 
+            
+
+            <button data-cy="submitButton" disabled={buttonDisabled} type="submit">Submit</button>
             <pre>{JSON.stringify(users, null, 2)}</pre>
-
-            <button disabled={buttonDisabled} type="submit">Submit</button>
-
           
         </form>
     )
